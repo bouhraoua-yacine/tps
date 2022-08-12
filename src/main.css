@@ -107,7 +107,7 @@ input {
 
 @media (min-width: 1024px) {
   .feature-2 {
-    margin-top: -30px !important;
+    margin-top: -28px !important;
   }
 }
 .disable-select {
@@ -146,4 +146,8 @@ input {
 .in-view .fade-up {
   transform: none;
   opacity: 1;
+}
+
+html {
+  scroll-behavior: smooth;
 }

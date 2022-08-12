@@ -1,6 +1,14 @@
 "use strict";
 import { tns } from "tiny-slider";
-import "flowbite";
+
+//Slider **********************************************************
+
+const navMenu = document.getElementById("navbar-default");
+const navButton = document.getElementById("nav-button");
+
+navButton.addEventListener("click", () => {
+  navMenu.classList.toggle("hidden");
+});
 
 //Slider **********************************************************
 
@@ -118,4 +126,34 @@ window.addEventListener("DOMContentLoaded", (event) => {
   countObserver.observe(text2);
 });
 
-//*******************************************************************
+//Main modal handling*******************************************************************
+const mainModal = document.getElementById("main-modal");
+const overlay = document.getElementById("overlay");
+
+const toggleModal = (modal, overlay) => {
+  modal.classList.toggle("hidden");
+  overlay.classList.toggle("hidden");
+};
+
+const modalTogglers = document.querySelectorAll(".modal-toggle");
+
+modalTogglers.forEach((toggler) =>
+  toggler.addEventListener("click", toggleModal.bind(null, mainModal, overlay))
+);
+
+//Handling landing page form*******************************************************************
+
+const devisBtn = document.getElementById("devis-btn");
+
+devisBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  const startInput = document.getElementById("start-input");
+  const endInput = document.getElementById("end-input");
+  const startInputModal = document.getElementById("start-input-modal");
+  const endInputModal = document.getElementById("end-input-modal");
+
+  toggleModal(mainModal, overlay);
+  startInputModal.value = startInput.value;
+  endInputModal.value = endInput.value;
+});
