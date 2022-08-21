@@ -157,3 +157,76 @@ devisBtn.addEventListener("click", (e) => {
   startInputModal.value = startInput.value;
   endInputModal.value = endInput.value;
 });
+
+// Adress autocomplete *******************************
+
+async function getAdress(query, limit = 3) {
+  try {
+    const res = await fetch(
+      `https://api-adresse.data.gouv.fr/search/?q=${query
+        .trim()
+        .replace(" ", "+")}&limit=3`
+    );
+    const data = await res.json();
+    data.features.forEach((entry) => console.log(entry.properties.label));
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+const inputStart = document.getElementById("start-input");
+
+inputStart.addEventListener("input", async () => {
+  try {
+    await getAdress(inputStart.value);
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+// Form sending *********************************
+
+document.getElementById("main-modal-btn").addEventListener("click", (e) => {
+  e.preventDefault();
+
+  const mainModal = document.getElementById("main-modal");
+
+  const inpObj = {};
+
+  Array.from(
+    mainModal.querySelectorAll("input ,select"),
+    (input) => (inpObj[input.name] = input.value)
+  );
+
+  //
+  fetch("https://submit-form.com/L6ISlz89", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(inpObj),
+  })
+    .then((res) => {
+      console.log(res);
+      toggleForm();
+      toggleSuccess();
+    })
+    .catch((err) => {
+      console.error(err);
+      toggleForm();
+      toggleErr();
+    });
+});
+
+function toggleForm() {
+  const modalForm = document.getElementById("main-modal").querySelector("form");
+  modalForm.classList.toggle("hidden");
+}
+
+function toggleSuccess() {
+  const success = document
+    .getElementById("main-modal")
+    .querySelector(".success");
+  success.classList.toggle("hidden");
+}

@@ -640,7 +640,7 @@
         >
           Demander Votre Devis Gratuit
         </h1>
-        <form action="">
+        <form>
           <div class="flex justify-between gap-4">
             <div class="w-full">
               <label
@@ -649,6 +649,7 @@
                 >Adresse de départ
               </label>
               <input
+                name="AdresseDepart"
                 id="start-input-modal"
                 class="mb-5 mt-2 text-gray-600 bg-white focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border"
               />
@@ -660,6 +661,7 @@
                 >Adresse d'arrivée
               </label>
               <input
+                name="AdresseDarrivee"
                 id="end-input-modal"
                 class="mb-5 mt-2 text-gray-600 bg-white focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border"
               />
@@ -691,7 +693,8 @@
             >Nom et Prénoms
           </label>
           <input
-            id="name"
+            id="nom"
+            name="nom"
             class="mb-5 mt-2 text-gray-600 bg-white focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border"
             placeholder="Martin Legrand"
           />
@@ -703,6 +706,7 @@
                 >Email
               </label>
               <input
+                name="email"
                 id="email"
                 type="email"
                 class="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border"
@@ -717,6 +721,7 @@
                 >N° de téléphone
               </label>
               <input
+                name="tel"
                 id="tel"
                 type="tel"
                 class="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border"
@@ -726,6 +731,7 @@
             </div>
           </div>
           <button
+            id="main-modal-btn"
             type="submit"
             class="w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition duration-150 ease-in-out hover:bg-indigo-600 bg-primary rounded text-white px-8 py-2 text-sm"
           >
