@@ -10,7 +10,6 @@
     <link rel="icon" type="image/x-icon" href="/favicon.7155ca86.ico">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@900&family=Roboto&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/tiny-slider.css">
-
     <link rel="stylesheet" href="https://unpkg.com/flowbite@1.4.7/dist/flowbite.min.css">
     <link rel="stylesheet" href="/index.af20ad6e.css">
     <script src="/index.4d6bcbeb.js" defer=""></script>
@@ -56,16 +55,15 @@
           <div class="fade fade-right | hidden lg:block absolute -bottom-px lg:-right-60 max-w-3xl 2xl:-right-4">
             <img src="/hero-img.980b8d08.webp" alt="">
           </div>
-          <div class="fade fade-left | lg:w-1/2 xl:max-w-2xl">
+          <div class="fade fade-left | lg:w-1/2">
             <h1 class="uppercase text-center text-3xl mb-7 md:text-5xl md:leading-snug lg:text-left">
-              Besoin d’une déménagement? Nous avons LA
+              Besoin d’une livraison? Nous avons LA
               <span class="header-accent | mx-auto">SOLUTION</span>
             </h1>
             <p class="text-center mb-16 md:text-lg lg:text-left">
               Professionel de la livraison urbaine et expert en logistique du
               dernier km, TPS met son savoir-faire à votre service...
             </p>
-
             <button class="btn modal-toggle | mx-auto mb-44 lg:mx-0 lg:mb-64" data-modal-toggle="user-data-modal">
               Demander un Devis
             </button>
@@ -88,7 +86,7 @@
             </div>
           </div>
           <!-- Adresse input -->
-          <form class="mb-0 shadow-xl" autocorrect="off" autocomplete="off">
+          <form class="mb-0 shadow-xl">
             <div class="space-y-9 lg:flex lg:space-y-0 justify-between gap-2">
               <div class="w-full relative after:content-iconMarker after:absolute after:top-3 after:right-7 md:after:top-5 md:after:right-5">
                 <input id="start-input" class="adress-input | font-secondary h-16 w-full pl-8 pr-20 rounded md:h-20 md:pl-14 md:text-2xl lg:text-xl lg:pl-6 lg:pr-16" type="text" placeholder="Adresse de départ">
@@ -403,22 +401,22 @@
 
     <!-- main modal -->
 
-    <div id="main-modal" role="alert" class="hidden container fixed inset-0 top-14 mx-auto w-11/12 md:w-2/3 max-w-3xl overflow-y-auto z-[9000]">
+    <div id="main-modal" role="alert" class="hidden container fixed inset-0 top-14 mx-auto w-11/12 md:w-2/3 max-w-lg overflow-y-auto">
       <div class="relative py-8 px-5 md:px-10 bg-white shadow-md rounded border border-gray-400 overflow-auto">
         <h1 class="text-gray-800 font-lg font-primary tracking-normal leading-tight mb-10">
           Demander Votre Devis Gratuit
         </h1>
-        <form autocorrect="off" autocomplete="off">
-          <div class="sm:flex justify-between gap-3">
-            <div class="w-full relative">
+        <form class="hidden">
+          <div class="flex justify-between gap-4">
+            <div class="w-full">
               <label for="start" class="text-gray-800 text-sm font-bold leading-tight tracking-normal">Adresse de départ
               </label>
-              <input name="AdresseDepart" id="start-input-modal" class="adress-input | mb-5 mt-2 text-gray-600 bg-white focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" autocomplete="off">
+              <input name="AdresseDepart" id="start-input-modal" class="mb-5 mt-2 text-gray-600 bg-white focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border">
             </div>
-            <div class="w-full relative">
+            <div class="w-full">
               <label for="end" class="text-gray-800 text-sm font-bold leading-tight tracking-normal">Adresse d'arrivée
               </label>
-              <input name="AdresseDarrivee" id="end-input-modal" class="adress-input | mb-5 mt-2 text-gray-600 bg-white focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" autocomplete="off">
+              <input name="AdresseDarrivee" id="end-input-modal" class="mb-5 mt-2 text-gray-600 bg-white focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border">
             </div>
           </div>
           <label for="surface" class="text-gray-800 text-sm font-bold leading-tight tracking-normal">Surface
@@ -437,35 +435,30 @@
           <label for="name" class="text-gray-800 text-sm font-bold leading-tight tracking-normal">Nom et Prénoms
           </label>
           <input id="nom" name="nom" class="mb-5 mt-2 text-gray-600 bg-white focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="Martin Legrand">
-          <div class="sm:flex justify-between gap-3 mb-10">
+          <div class="flex justify-between gap-4 mb-4">
             <div class="w-full">
-              <label for="email" class="text-gray-800 text-sm font-bold leading-tight tracking-normal">Email *
+              <label for="email" class="text-gray-800 text-sm font-bold leading-tight tracking-normal">Email
               </label>
-              <input name="email" id="email" type="email" class="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="example@email.com" required="" pattern="[A-Za-z0-9._+-]+@[A-Za-z0-9._+-]+\.[a-z]{2,}">
+              <input name="email" id="email" type="email" class="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="example@email.com" required="">
             </div>
             <div class="w-full">
-              <label for="tel" class="text-gray-800 text-sm font-bold leading-tight tracking-normal">N° de téléphone *
+              <label for="tel" class="text-gray-800 text-sm font-bold leading-tight tracking-normal">N° de téléphone
               </label>
-              <input name="tel" id="tel" type="tel" class="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="06xxxxxxxx" required="" pattern="^0\d{9}$">
+              <input name="tel" id="tel" type="tel" class="mb-5 mt-2 text-gray-600 focus:outline-none focus:border focus:border-primary font-normal w-full h-10 flex items-center pl-3 text-sm border-gray-300 rounded border" placeholder="06 xx xx xx xx" required="">
             </div>
           </div>
-          <div class="flex gap-3">
-            <button id="main-modal-btn" type="submit" class="w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition duration-150 ease-in-out hover:bg-indigo-600 bg-primary rounded text-white px-8 py-2 text-sm">
-              <div class="send-btn-txt |">Envoyer</div>
-              <div class="lds-ellipsis | hidden">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-              </div>
-            </button>
-            <button class="modal-toggle | w-full border-2 border-slate-500 focus:outline-none focus:ring-2 focus:ring-primary transition duration-150 ease-in-out bg-transparent rounded text-slate-500 px-8 py-2 text-sm hover:text-primary hover:border-primary" type="button">
-              Fermer
-            </button>
-          </div>
+          <button id="main-modal-btn" type="submit" class="w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition duration-150 ease-in-out hover:bg-indigo-600 bg-primary rounded text-white px-8 py-2 text-sm">
+            <div class="send-btn-txt | hidden">Envoyer</div>
+            <div class="lds-ellipsis">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </button>
         </form>
 
-        <div class="success | mt-32 hidden mb-32">
+        <div class="success |">
           <div class="success-checkmark">
             <div class="check-icon">
               <span class="icon-line line-tip"></span>
@@ -474,35 +467,9 @@
               <div class="icon-fix"></div>
             </div>
           </div>
-          <div class="flex items-center gap-5 mt-5">
-            <img class="rounded-full w-16" src="/corespendant.548076ff.jpg" alt="correspondent">
-
-            <p>
-              Un correspondant va vous joindre sous peu. Merci pour votre
-              patience.
-            </p>
+          <div>
+            <img class="rounded-full w-20" src="/corespendant.548076ff.jpg" alt="correspondent">
           </div>
-        </div>
-
-        <div class="error | mt-40 hidden">
-          <div class="sa | mx-auto">
-            <div class="sa-error">
-              <div class="sa-error-x">
-                <div class="sa-error-left"></div>
-                <div class="sa-error-right"></div>
-              </div>
-              <div class="sa-error-placeholder"></div>
-              <div class="sa-error-fix"></div>
-            </div>
-          </div>
-          <p class="text-center mb-36">
-            Quelque chose s'est mal passé. Veuillez
-            <button class="modal-init | underline text-blue-700">
-              réessayer</button>.
-          </p>
-          <button class="modal-toggle | w-full border-2 border-slate-500 focus:outline-none focus:ring-2 focus:ring-primary transition duration-150 ease-in-out bg-transparent rounded text-slate-500 px-8 py-2 text-sm hover:text-primary hover:border-primary" type="button">
-            Fermer
-          </button>
         </div>
 
         <button class="modal-toggle | cursor-pointer absolute top-0 right-0 mt-4 mr-5 text-gray-400 hover:text-gray-600 transition duration-150 ease-in-out rounded focus:ring-2 focus:outline-none focus:ring-gray-600" aria-label="close modal" role="button">
@@ -514,6 +481,15 @@
         </button>
       </div>
     </div>
+
+    <!-- <div class="w-full flex justify-center py-12" id="button">
+      <button
+        class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-700 mx-auto transition duration-150 ease-in-out hover:bg-indigo-600 bg-indigo-700 rounded text-white px-4 sm:px-8 py-2 text-xs sm:text-sm"
+        onclick="modalHandler(true)"
+      >
+        Open Modal
+      </button>
+    </div> -->
 
     <footer class="pb-4 bg-primary pt-16 px-3 md:px-7 lg:px-14 lg:pt-20 xl:px-24">
       <div class="md:flex md:justify-between">

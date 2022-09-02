@@ -532,7 +532,11 @@ function hmrAcceptRun(bundle, id) {
 }
 
 },{}],"gLLPy":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _tinySlider = require("tiny-slider");
+// Adress autocomplete *******************************
+var _autocompleteJs = require("@tarekraafat/autocomplete.js");
+var _autocompleteJsDefault = parcelHelpers.interopDefault(_autocompleteJs);
 "use strict";
 //Slider **********************************************************
 const navMenu = document.getElementById("navbar-default");
@@ -630,7 +634,10 @@ const toggleModal = (modal, overlay1)=>{
     overlay1.classList.toggle("hidden");
 };
 const modalTogglers = document.querySelectorAll(".modal-toggle");
-modalTogglers.forEach((toggler)=>toggler.addEventListener("click", toggleModal.bind(null, mainModal, overlay)));
+modalTogglers.forEach((toggler)=>toggler.addEventListener("click", ()=>{
+        toggleModal(mainModal, overlay);
+        initModal();
+    }));
 //Handling landing page form*******************************************************************
 const devisBtn = document.getElementById("devis-btn");
 devisBtn.addEventListener("click", (e)=>{
@@ -643,58 +650,188 @@ devisBtn.addEventListener("click", (e)=>{
     startInputModal.value = startInput.value;
     endInputModal.value = endInput.value;
 });
-// Adress autocomplete *******************************
-async function getAdress(query, limit = 3) {
-    try {
-        const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${query.trim().replace(" ", "+")}&limit=3`);
-        const data = await res.json();
-        data.features.forEach((entry)=>console.log(entry.properties.label));
-    } catch (err) {
-        console.error(err);
+const config = {
+    data: {
+        src: async (query)=>{
+            try {
+                const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${query.trim().replace(" ", "+")}&limit=10`);
+                const data = await res.json();
+                const addressArr = [];
+                data.features.forEach((entry)=>addressArr.push(entry.properties.label));
+                return addressArr;
+            } catch (error) {
+                return error;
+            }
+        },
+        cache: false
+    },
+    searchEngine: "loose",
+    resultsList: {
+        element: (list, data)=>{
+            if (!data.results.length) {
+                // Create "No Results" message element
+                const message = document.createElement("div");
+                // Add class to the created element
+                message.setAttribute("class", "no_result");
+                // Add message text content
+                message.innerHTML = `<span>Aucun Results trouvés pour "${data.query}"</span>`;
+                // Append message element to the results list
+                list.prepend(message);
+            }
+        },
+        noResults: true
+    },
+    threshold: 5,
+    debounce: 300,
+    resultItem: {
+        highlight: true
     }
-}
-const inputStart = document.getElementById("start-input");
-inputStart.addEventListener("input", async ()=>{
-    try {
-        await getAdress(inputStart.value);
-    } catch (err) {
-        console.error(err);
+};
+const startInputAutoComplete = new (0, _autocompleteJsDefault.default)({
+    ...config,
+    selector: "#start-input",
+    events: {
+        input: {
+            selection: (event)=>{
+                const selection = event.detail.selection.value;
+                startInputAutoComplete.input.value = selection;
+            }
+        }
+    }
+});
+const endInputAutoComplete = new (0, _autocompleteJsDefault.default)({
+    ...config,
+    selector: "#end-input",
+    events: {
+        input: {
+            selection: (event)=>{
+                const selection = event.detail.selection.value;
+                endInputAutoComplete.input.value = selection;
+            }
+        }
+    }
+});
+const startInputAutoCompleteModal = new (0, _autocompleteJsDefault.default)({
+    ...config,
+    selector: "#start-input-modal",
+    events: {
+        input: {
+            selection: (event)=>{
+                const selection = event.detail.selection.value;
+                startInputAutoCompleteModal.input.value = selection;
+            }
+        }
+    }
+});
+const endInputAutoCompleteModal = new (0, _autocompleteJsDefault.default)({
+    ...config,
+    selector: "#end-input-modal",
+    events: {
+        input: {
+            selection: (event)=>{
+                const selection = event.detail.selection.value;
+                endInputAutoCompleteModal.input.value = selection;
+            }
+        }
     }
 });
 // Form sending *********************************
-document.getElementById("main-modal-btn").addEventListener("click", (e)=>{
+//cheking validty
+const tel = document.getElementById("tel");
+const email = document.getElementById("email");
+//show error message when invalid
+tel.addEventListener("invalid", (e)=>{
     e.preventDefault();
-    const mainModal1 = document.getElementById("main-modal");
-    const inpObj = {};
-    Array.from(mainModal1.querySelectorAll("input ,select"), (input)=>inpObj[input.name] = input.value);
-    //
-    fetch("https://submit-form.com/L6ISlz89", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json"
-        },
-        body: JSON.stringify(inpObj)
-    }).then((res)=>{
-        console.log(res);
-        toggleForm();
-        toggleSuccess();
-    }).catch((err)=>{
-        console.error(err);
-        toggleForm();
-        toggleErr();
-    });
+    tel.nextElementSibling?.remove();
+    tel.classList.add("ring-red-600", "ring-1");
+    tel.insertAdjacentHTML("afterend", `<div class="invalid-err-txt | text-red-600 text-xs -mt-4">
+  Doit contenir une série 10 chiffres, sans espaces, commençant par zero.
+</div>`);
 });
-function toggleForm() {
-    const modalForm = document.getElementById("main-modal").querySelector("form");
-    modalForm.classList.toggle("hidden");
+email.addEventListener("invalid", (e)=>{
+    e.preventDefault();
+    email.nextElementSibling?.remove();
+    email.classList.add("ring-red-600", "ring-1");
+    email.insertAdjacentHTML("afterend", `<div class="invalid-err-txt | text-red-600 text-xs -mt-4 mb-4">
+  Veuillez entrer une adresse email valide.
+</div>`);
+});
+//reinitialize the inputs on focus
+email.addEventListener("focus", (e)=>{
+    e.preventDefault();
+    email.classList.remove("ring-red-600", "ring-1");
+    email.nextElementSibling?.remove();
+});
+tel.addEventListener("focus", (e)=>{
+    e.preventDefault();
+    tel.classList.remove("ring-red-600", "ring-1");
+    tel.nextElementSibling?.remove();
+});
+// Checking validity on change
+email.addEventListener("blur", ()=>{
+    email.checkValidity();
+});
+tel.addEventListener("blur", ()=>{
+    tel.checkValidity();
+});
+//Click event on send form
+document.getElementById("main-modal-btn").addEventListener("click", async (e)=>{
+    try {
+        e.preventDefault();
+        const emailValid = await email.checkValidity();
+        const telValid = await tel.checkValidity();
+        if (!(emailValid && telValid)) return;
+        const inpObj = {};
+        Array.from(mainModal.querySelectorAll("input ,select"), (input)=>inpObj[input.name] = input.value);
+        showLoader();
+        await fetch("https://submit-form.com/L6ISlz89", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            },
+            body: JSON.stringify(inpObj)
+        });
+        hiddeForm();
+        showSuccess();
+    } catch (err) {
+        console.error(err);
+        hiddeForm();
+        showErr();
+    }
+});
+function showLoader() {
+    document.querySelector(".send-btn-txt").classList.add("hidden");
+    document.querySelector(".lds-ellipsis").style.display = "inline-block";
 }
-function toggleSuccess() {
+function hiddeForm() {
+    const modalForm = document.getElementById("main-modal").querySelector("form");
+    modalForm.classList.add("hidden");
+}
+function showSuccess() {
     const success = document.getElementById("main-modal").querySelector(".success");
-    success.classList.toggle("hidden");
+    success.classList.remove("hidden");
+}
+function showErr() {
+    const error = document.getElementById("main-modal").querySelector(".error");
+    error.classList.remove("hidden");
+}
+// Initialize modal
+document.querySelectorAll(".modal-init").forEach((entry)=>entry.addEventListener("click", (e)=>{
+        initModal();
+    }));
+function initModal() {
+    const success = document.getElementById("main-modal").querySelector(".success");
+    success.classList.add("hidden");
+    const error = document.getElementById("main-modal").querySelector(".error");
+    error.classList.add("hidden");
+    document.querySelector(".send-btn-txt").classList.remove("hidden");
+    document.querySelector(".lds-ellipsis").style.display = "none";
+    const modalForm = document.getElementById("main-modal").querySelector("form");
+    modalForm.classList.remove("hidden");
 }
 
-},{"tiny-slider":"hw4TK"}],"hw4TK":[function(require,module,exports) {
+},{"tiny-slider":"hw4TK","@tarekraafat/autocomplete.js":"96Ut5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hw4TK":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -2941,6 +3078,427 @@ var tns = function(options) {
     };
 };
 exports.tns = tns;
+
+},{}],"96Ut5":[function(require,module,exports) {
+var e, t;
+e = this, t = function() {
+    "use strict";
+    function e1(e2, t2) {
+        var n = Object.keys(e2);
+        if (Object.getOwnPropertySymbols) {
+            var r = Object.getOwnPropertySymbols(e2);
+            t2 && (r = r.filter(function(t3) {
+                return Object.getOwnPropertyDescriptor(e2, t3).enumerable;
+            })), n.push.apply(n, r);
+        }
+        return n;
+    }
+    function t1(t4) {
+        for(var n = 1; n < arguments.length; n++){
+            var i = null != arguments[n] ? arguments[n] : {};
+            n % 2 ? e1(Object(i), !0).forEach(function(e3) {
+                r1(t4, e3, i[e3]);
+            }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(t4, Object.getOwnPropertyDescriptors(i)) : e1(Object(i)).forEach(function(e4) {
+                Object.defineProperty(t4, e4, Object.getOwnPropertyDescriptor(i, e4));
+            });
+        }
+        return t4;
+    }
+    function n1(e5) {
+        return n1 = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(e6) {
+            return typeof e6;
+        } : function(e7) {
+            return e7 && "function" == typeof Symbol && e7.constructor === Symbol && e7 !== Symbol.prototype ? "symbol" : typeof e7;
+        }, n1(e5);
+    }
+    function r1(e8, t5, n) {
+        return t5 in e8 ? Object.defineProperty(e8, t5, {
+            value: n,
+            enumerable: !0,
+            configurable: !0,
+            writable: !0
+        }) : e8[t5] = n, e8;
+    }
+    function i1(e9) {
+        return function(e10) {
+            if (Array.isArray(e10)) return s1(e10);
+        }(e9) || function(e11) {
+            if ("undefined" != typeof Symbol && null != e11[Symbol.iterator] || null != e11["@@iterator"]) return Array.from(e11);
+        }(e9) || o1(e9) || function() {
+            throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+        }();
+    }
+    function o1(e12, t6) {
+        if (e12) {
+            if ("string" == typeof e12) return s1(e12, t6);
+            var n = Object.prototype.toString.call(e12).slice(8, -1);
+            return "Object" === n && e12.constructor && (n = e12.constructor.name), "Map" === n || "Set" === n ? Array.from(e12) : "Arguments" === n || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n) ? s1(e12, t6) : void 0;
+        }
+    }
+    function s1(e13, t7) {
+        (null == t7 || t7 > e13.length) && (t7 = e13.length);
+        for(var n = 0, r = new Array(t7); n < t7; n++)r[n] = e13[n];
+        return r;
+    }
+    var u1 = function(e14) {
+        return "string" == typeof e14 ? document.querySelector(e14) : e14();
+    }, a1 = function(e15, t8) {
+        var n = "string" == typeof e15 ? document.createElement(e15) : e15;
+        for(var r in t8){
+            var i = t8[r];
+            if ("inside" === r) i.append(n);
+            else if ("dest" === r) u1(i[0]).insertAdjacentElement(i[1], n);
+            else if ("around" === r) {
+                var o = i;
+                o.parentNode.insertBefore(n, o), n.append(o), null != o.getAttribute("autofocus") && o.focus();
+            } else r in n ? n[r] = i : n.setAttribute(r, i);
+        }
+        return n;
+    }, c1 = function(e16, t9) {
+        return e16 = String(e16).toLowerCase(), t9 ? e16.normalize("NFD").replace(/[\u0300-\u036f]/g, "").normalize("NFC") : e16;
+    }, l1 = function(e17, n) {
+        return a1("mark", t1({
+            innerHTML: e17
+        }, "string" == typeof n && {
+            class: n
+        })).outerHTML;
+    }, f1 = function(e18, t10) {
+        t10.input.dispatchEvent(new CustomEvent(e18, {
+            bubbles: !0,
+            detail: t10.feedback,
+            cancelable: !0
+        }));
+    }, p1 = function(e19, t11, n2) {
+        var r = n2 || {}, i = r.mode, o = r.diacritics, s = r.highlight, u = c1(t11, o);
+        if (t11 = String(t11), e19 = c1(e19, o), "loose" === i) {
+            var a = (e19 = e19.replace(/ /g, "")).length, f = 0, p = Array.from(t11).map(function(t12, n) {
+                return f < a && u[n] === e19[f] && (t12 = s ? l1(t12, s) : t12, f++), t12;
+            }).join("");
+            if (f === a) return p;
+        } else {
+            var d = u.indexOf(e19);
+            if (~d) return e19 = t11.substring(d, d + e19.length), d = s ? t11.replace(e19, l1(e19, s)) : t11;
+        }
+    }, d1 = function(e20, t13) {
+        return new Promise(function(n3, r) {
+            var i;
+            return (i = e20.data).cache && i.store ? n3() : new Promise(function(e21, n) {
+                return "function" == typeof i.src ? i.src(t13).then(e21, n) : e21(i.src);
+            }).then(function(t14) {
+                try {
+                    return e20.feedback = i.store = t14, f1("response", e20), n3();
+                } catch (e22) {
+                    return r(e22);
+                }
+            }, r);
+        });
+    }, h = function(e23, t15) {
+        var n4 = t15.data, r2 = t15.searchEngine, i2 = [];
+        n4.store.forEach(function(s3, u2) {
+            var a2 = function(n) {
+                var o = n ? s3[n] : s3, u = "function" == typeof r2 ? r2(e23, o) : p1(e23, o, {
+                    mode: r2,
+                    diacritics: t15.diacritics,
+                    highlight: t15.resultItem.highlight
+                });
+                if (u) {
+                    var a = {
+                        match: u,
+                        value: s3
+                    };
+                    n && (a.key = n), i2.push(a);
+                }
+            };
+            if (n4.keys) {
+                var c, l = function(e24, t16) {
+                    var n = "undefined" != typeof Symbol && e24[Symbol.iterator] || e24["@@iterator"];
+                    if (!n) {
+                        if (Array.isArray(e24) || (n = o1(e24)) || t16 && e24 && "number" == typeof e24.length) {
+                            n && (e24 = n);
+                            var r = 0, i = function() {};
+                            return {
+                                s: i,
+                                n: function() {
+                                    return r >= e24.length ? {
+                                        done: !0
+                                    } : {
+                                        done: !1,
+                                        value: e24[r++]
+                                    };
+                                },
+                                e: function(e25) {
+                                    throw e25;
+                                },
+                                f: i
+                            };
+                        }
+                        throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+                    }
+                    var s, u = !0, a = !1;
+                    return {
+                        s: function() {
+                            n = n.call(e24);
+                        },
+                        n: function() {
+                            var e26 = n.next();
+                            return u = e26.done, e26;
+                        },
+                        e: function(e27) {
+                            a = !0, s = e27;
+                        },
+                        f: function() {
+                            try {
+                                u || null == n.return || n.return();
+                            } finally{
+                                if (a) throw s;
+                            }
+                        }
+                    };
+                }(n4.keys);
+                try {
+                    for(l.s(); !(c = l.n()).done;)a2(c.value);
+                } catch (e28) {
+                    l.e(e28);
+                } finally{
+                    l.f();
+                }
+            } else a2();
+        }), n4.filter && (i2 = n4.filter(i2));
+        var s2 = i2.slice(0, t15.resultsList.maxResults);
+        t15.feedback = {
+            query: e23,
+            matches: i2,
+            results: s2
+        }, f1("results", t15);
+    }, m = "aria-expanded", b = "aria-activedescendant", y = "aria-selected", v = function(e29, n) {
+        e29.feedback.selection = t1({
+            index: n
+        }, e29.feedback.results[n]);
+    }, g = function(e30) {
+        e30.isOpen || ((e30.wrapper || e30.input).setAttribute(m, !0), e30.list.removeAttribute("hidden"), e30.isOpen = !0, f1("open", e30));
+    }, w = function(e31) {
+        e31.isOpen && ((e31.wrapper || e31.input).setAttribute(m, !1), e31.input.setAttribute(b, ""), e31.list.setAttribute("hidden", ""), e31.isOpen = !1, f1("close", e31));
+    }, O = function(e32, t17) {
+        var n = t17.resultItem, r = t17.list.getElementsByTagName(n.tag), o = !!n.selected && n.selected.split(" ");
+        if (t17.isOpen && r.length) {
+            var s, u, a = t17.cursor;
+            e32 >= r.length && (e32 = 0), e32 < 0 && (e32 = r.length - 1), t17.cursor = e32, a > -1 && (r[a].removeAttribute(y), o && (u = r[a].classList).remove.apply(u, i1(o))), r[e32].setAttribute(y, !0), o && (s = r[e32].classList).add.apply(s, i1(o)), t17.input.setAttribute(b, r[t17.cursor].id), t17.list.scrollTop = r[e32].offsetTop - t17.list.clientHeight + r[e32].clientHeight + 5, t17.feedback.cursor = t17.cursor, v(t17, e32), f1("navigate", t17);
+        }
+    }, A = function(e33) {
+        O(e33.cursor + 1, e33);
+    }, k = function(e34) {
+        O(e34.cursor - 1, e34);
+    }, L = function(e35, t18, n) {
+        (n = n >= 0 ? n : e35.cursor) < 0 || (e35.feedback.event = t18, v(e35, n), f1("selection", e35), w(e35));
+    };
+    function j(e36, n5) {
+        var r3 = this;
+        return new Promise(function(i3, o2) {
+            var s4, u3;
+            return s4 = n5 || ((u3 = e36.input) instanceof HTMLInputElement || u3 instanceof HTMLTextAreaElement ? u3.value : u3.innerHTML), function(e37, t19, n) {
+                return t19 ? t19(e37) : e37.length >= n;
+            }(s4 = e36.query ? e36.query(s4) : s4, e36.trigger, e36.threshold) ? d1(e36, s4).then(function(n6) {
+                try {
+                    return e36.feedback instanceof Error ? i3() : (h(s4, e36), e36.resultsList && function(e38) {
+                        var n7 = e38.resultsList, r4 = e38.list, i = e38.resultItem, o = e38.feedback, s = o.matches, u = o.results;
+                        if (e38.cursor = -1, r4.innerHTML = "", s.length || n7.noResults) {
+                            var c = new DocumentFragment;
+                            u.forEach(function(e39, n) {
+                                var r = a1(i.tag, t1({
+                                    id: "".concat(i.id, "_").concat(n),
+                                    role: "option",
+                                    innerHTML: e39.match,
+                                    inside: c
+                                }, i.class && {
+                                    class: i.class
+                                }));
+                                i.element && i.element(r, e39);
+                            }), r4.append(c), n7.element && n7.element(r4, o), g(e38);
+                        } else w(e38);
+                    }(e36), c2.call(r3));
+                } catch (e40) {
+                    return o2(e40);
+                }
+            }, o2) : (w(e36), c2.call(r3));
+            function c2() {
+                return i3();
+            }
+        });
+    }
+    var S = function(e41, t20) {
+        for(var n in e41)for(var r in e41[n])t20(n, r);
+    }, T = function(e42) {
+        var n8, r5, i4, o = e42.events, s = (n8 = function() {
+            return j(e42);
+        }, r5 = e42.debounce, function() {
+            clearTimeout(i4), i4 = setTimeout(function() {
+                return n8();
+            }, r5);
+        }), u = e42.events = t1({
+            input: t1({}, o && o.input)
+        }, e42.resultsList && {
+            list: o ? t1({}, o.list) : {}
+        }), a = {
+            input: {
+                input: function() {
+                    s();
+                },
+                keydown: function(t21) {
+                    !function(e43, t22) {
+                        switch(e43.keyCode){
+                            case 40:
+                            case 38:
+                                e43.preventDefault(), 40 === e43.keyCode ? A(t22) : k(t22);
+                                break;
+                            case 13:
+                                t22.submit || e43.preventDefault(), t22.cursor >= 0 && L(t22, e43);
+                                break;
+                            case 9:
+                                t22.resultsList.tabSelect && t22.cursor >= 0 && L(t22, e43);
+                                break;
+                            case 27:
+                                t22.input.value = "", w(t22);
+                        }
+                    }(t21, e42);
+                },
+                blur: function() {
+                    w(e42);
+                }
+            },
+            list: {
+                mousedown: function(e44) {
+                    e44.preventDefault();
+                },
+                click: function(t23) {
+                    !function(e45, t24) {
+                        var n = t24.resultItem.tag.toUpperCase(), r = Array.from(t24.list.querySelectorAll(n)), i = e45.target.closest(n);
+                        i && i.nodeName === n && L(t24, e45, r.indexOf(i));
+                    }(t23, e42);
+                }
+            }
+        };
+        S(a, function(t25, n) {
+            (e42.resultsList || "input" === n) && (u[t25][n] || (u[t25][n] = a[t25][n]));
+        }), S(u, function(t26, n) {
+            e42[t26].addEventListener(n, u[t26][n]);
+        });
+    };
+    function E(e46) {
+        var n = this;
+        return new Promise(function(r, i) {
+            var o, s, u;
+            if (o = e46.placeHolder, u = {
+                role: "combobox",
+                "aria-owns": (s = e46.resultsList).id,
+                "aria-haspopup": !0,
+                "aria-expanded": !1
+            }, a1(e46.input, t1(t1({
+                "aria-controls": s.id,
+                "aria-autocomplete": "both"
+            }, o && {
+                placeholder: o
+            }), !e46.wrapper && t1({}, u))), e46.wrapper && (e46.wrapper = a1("div", t1({
+                around: e46.input,
+                class: e46.name + "_wrapper"
+            }, u))), s && (e46.list = a1(s.tag, t1({
+                dest: [
+                    s.destination,
+                    s.position
+                ],
+                id: s.id,
+                role: "listbox",
+                hidden: "hidden"
+            }, s.class && {
+                class: s.class
+            }))), T(e46), e46.data.cache) return d1(e46).then(function(e) {
+                try {
+                    return c.call(n);
+                } catch (e47) {
+                    return i(e47);
+                }
+            }, i);
+            function c() {
+                return f1("init", e46), r();
+            }
+            return c.call(n);
+        });
+    }
+    function x(e48) {
+        var t27 = e48.prototype;
+        t27.init = function() {
+            E(this);
+        }, t27.start = function(e49) {
+            j(this, e49);
+        }, t27.unInit = function() {
+            if (this.wrapper) {
+                var e50 = this.wrapper.parentNode;
+                e50.insertBefore(this.input, this.wrapper), e50.removeChild(this.wrapper);
+            }
+            var t28;
+            S((t28 = this).events, function(e51, n) {
+                t28[e51].removeEventListener(n, t28.events[e51][n]);
+            });
+        }, t27.open = function() {
+            g(this);
+        }, t27.close = function() {
+            w(this);
+        }, t27.goTo = function(e52) {
+            O(e52, this);
+        }, t27.next = function() {
+            A(this);
+        }, t27.previous = function() {
+            k(this);
+        }, t27.select = function(e53) {
+            L(this, null, e53);
+        }, t27.search = function(e54, t29, n) {
+            return p1(e54, t29, n);
+        };
+    }
+    return function e55(t30) {
+        this.options = t30, this.id = e55.instances = (e55.instances || 0) + 1, this.name = "autoComplete", this.wrapper = 1, this.threshold = 1, this.debounce = 0, this.resultsList = {
+            position: "afterend",
+            tag: "ul",
+            maxResults: 5
+        }, this.resultItem = {
+            tag: "li"
+        }, function(e56) {
+            var t31 = e56.name, r = e56.options, i = e56.resultsList, o = e56.resultItem;
+            for(var s in r)if ("object" === n1(r[s])) for(var a in e56[s] || (e56[s] = {}), r[s])e56[s][a] = r[s][a];
+            else e56[s] = r[s];
+            e56.selector = e56.selector || "#" + t31, i.destination = i.destination || e56.selector, i.id = i.id || t31 + "_list_" + e56.id, o.id = o.id || t31 + "_result", e56.input = u1(e56.selector);
+        }(this), x.call(this, e55), E(this);
+    };
+}, module.exports = t();
+
+},{}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
 
 },{}]},["8TtF2","gLLPy"], "gLLPy", "parcelRequiref818")
 

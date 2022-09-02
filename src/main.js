@@ -138,7 +138,10 @@ const toggleModal = (modal, overlay) => {
 const modalTogglers = document.querySelectorAll(".modal-toggle");
 
 modalTogglers.forEach((toggler) =>
-  toggler.addEventListener("click", toggleModal.bind(null, mainModal, overlay))
+  toggler.addEventListener("click", () => {
+    toggleModal(mainModal, overlay);
+    initModal();
+  })
 );
 
 //Handling landing page form*******************************************************************
@@ -160,73 +163,240 @@ devisBtn.addEventListener("click", (e) => {
 
 // Adress autocomplete *******************************
 
-async function getAdress(query, limit = 3) {
-  try {
-    const res = await fetch(
-      `https://api-adresse.data.gouv.fr/search/?q=${query
-        .trim()
-        .replace(" ", "+")}&limit=3`
-    );
-    const data = await res.json();
-    data.features.forEach((entry) => console.log(entry.properties.label));
-  } catch (err) {
-    console.error(err);
-  }
-}
+import autoComplete from "@tarekraafat/autocomplete.js";
 
-const inputStart = document.getElementById("start-input");
+const config = {
+  data: {
+    src: async (query) => {
+      try {
+        const res = await fetch(
+          `https://api-adresse.data.gouv.fr/search/?q=${query
+            .trim()
+            .replace(" ", "+")}&limit=10`
+        );
+        const data = await res.json();
+        const addressArr = [];
+        data.features.forEach((entry) =>
+          addressArr.push(entry.properties.label)
+        );
+        return addressArr;
+      } catch (error) {
+        return error;
+      }
+    },
+    cache: false,
+  },
+  searchEngine: "loose",
+  resultsList: {
+    element: (list, data) => {
+      if (!data.results.length) {
+        // Create "No Results" message element
+        const message = document.createElement("div");
+        // Add class to the created element
+        message.setAttribute("class", "no_result");
+        // Add message text content
+        message.innerHTML = `<span>Aucun Results trouvés pour "${data.query}"</span>`;
+        // Append message element to the results list
+        list.prepend(message);
+      }
+    },
+    noResults: true,
+  },
+  threshold: 5,
+  debounce: 300,
+  resultItem: {
+    highlight: true,
+  },
+};
 
-inputStart.addEventListener("input", async () => {
-  try {
-    await getAdress(inputStart.value);
-  } catch (err) {
-    console.error(err);
-  }
+const startInputAutoComplete = new autoComplete({
+  ...config,
+  selector: "#start-input",
+  events: {
+    input: {
+      selection: (event) => {
+        const selection = event.detail.selection.value;
+        startInputAutoComplete.input.value = selection;
+      },
+    },
+  },
+});
+
+const endInputAutoComplete = new autoComplete({
+  ...config,
+  selector: "#end-input",
+  events: {
+    input: {
+      selection: (event) => {
+        const selection = event.detail.selection.value;
+        endInputAutoComplete.input.value = selection;
+      },
+    },
+  },
+});
+
+const startInputAutoCompleteModal = new autoComplete({
+  ...config,
+  selector: "#start-input-modal",
+  events: {
+    input: {
+      selection: (event) => {
+        const selection = event.detail.selection.value;
+        startInputAutoCompleteModal.input.value = selection;
+      },
+    },
+  },
+});
+
+const endInputAutoCompleteModal = new autoComplete({
+  ...config,
+  selector: "#end-input-modal",
+  events: {
+    input: {
+      selection: (event) => {
+        const selection = event.detail.selection.value;
+        endInputAutoCompleteModal.input.value = selection;
+      },
+    },
+  },
 });
 
 // Form sending *********************************
 
-document.getElementById("main-modal-btn").addEventListener("click", (e) => {
+//cheking validty
+const tel = document.getElementById("tel");
+const email = document.getElementById("email");
+
+//show error message when invalid
+
+tel.addEventListener("invalid", (e) => {
   e.preventDefault();
-
-  const mainModal = document.getElementById("main-modal");
-
-  const inpObj = {};
-
-  Array.from(
-    mainModal.querySelectorAll("input ,select"),
-    (input) => (inpObj[input.name] = input.value)
+  tel.nextElementSibling?.remove();
+  tel.classList.add("ring-red-600", "ring-1");
+  tel.insertAdjacentHTML(
+    "afterend",
+    `<div class="invalid-err-txt | text-red-600 text-xs -mt-4">
+  Doit contenir une série 10 chiffres, sans espaces, commençant par zero.
+</div>`
   );
-
-  //
-  fetch("https://submit-form.com/L6ISlz89", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify(inpObj),
-  })
-    .then((res) => {
-      console.log(res);
-      toggleForm();
-      toggleSuccess();
-    })
-    .catch((err) => {
-      console.error(err);
-      toggleForm();
-      toggleErr();
-    });
 });
 
-function toggleForm() {
-  const modalForm = document.getElementById("main-modal").querySelector("form");
-  modalForm.classList.toggle("hidden");
+email.addEventListener("invalid", (e) => {
+  e.preventDefault();
+  email.nextElementSibling?.remove();
+  email.classList.add("ring-red-600", "ring-1");
+  email.insertAdjacentHTML(
+    "afterend",
+    `<div class="invalid-err-txt | text-red-600 text-xs -mt-4 mb-4">
+  Veuillez entrer une adresse email valide.
+</div>`
+  );
+});
+
+//reinitialize the inputs on focus
+email.addEventListener("focus", (e) => {
+  e.preventDefault();
+  email.classList.remove("ring-red-600", "ring-1");
+  email.nextElementSibling?.remove();
+});
+
+tel.addEventListener("focus", (e) => {
+  e.preventDefault();
+  tel.classList.remove("ring-red-600", "ring-1");
+  tel.nextElementSibling?.remove();
+});
+
+// Checking validity on change
+email.addEventListener("blur", () => {
+  email.checkValidity();
+});
+
+tel.addEventListener("blur", () => {
+  tel.checkValidity();
+});
+
+//checking form validity before sending
+
+if (true) {
+  //Click event on send form
+  document
+    .getElementById("main-modal-btn")
+    .addEventListener("click", async (e) => {
+      try {
+        e.preventDefault();
+        const emailValid = await email.checkValidity();
+        const telValid = await tel.checkValidity();
+
+        if (!(emailValid && telValid)) return;
+
+        const inpObj = {};
+
+        Array.from(
+          mainModal.querySelectorAll("input ,select"),
+          (input) => (inpObj[input.name] = input.value)
+        );
+
+        showLoader();
+
+        await fetch("https://submit-form.com/L6ISlz89", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(inpObj),
+        });
+        hiddeForm();
+        showSuccess();
+      } catch (err) {
+        console.error(err);
+        hiddeForm();
+        showErr();
+      }
+    });
 }
 
-function toggleSuccess() {
+function showLoader() {
+  document.querySelector(".send-btn-txt").classList.add("hidden");
+  document.querySelector(".lds-ellipsis").style.display = "inline-block";
+}
+
+function hiddeForm() {
+  const modalForm = document.getElementById("main-modal").querySelector("form");
+  modalForm.classList.add("hidden");
+}
+
+function showSuccess() {
   const success = document
     .getElementById("main-modal")
     .querySelector(".success");
-  success.classList.toggle("hidden");
+  success.classList.remove("hidden");
+}
+
+function showErr() {
+  const error = document.getElementById("main-modal").querySelector(".error");
+  error.classList.remove("hidden");
+}
+
+// Initialize modal
+document.querySelectorAll(".modal-init").forEach((entry) =>
+  entry.addEventListener("click", (e) => {
+    initModal();
+  })
+);
+
+function initModal() {
+  const success = document
+    .getElementById("main-modal")
+    .querySelector(".success");
+  success.classList.add("hidden");
+
+  const error = document.getElementById("main-modal").querySelector(".error");
+  error.classList.add("hidden");
+
+  document.querySelector(".send-btn-txt").classList.remove("hidden");
+  document.querySelector(".lds-ellipsis").style.display = "none";
+
+  const modalForm = document.getElementById("main-modal").querySelector("form");
+  modalForm.classList.remove("hidden");
 }
