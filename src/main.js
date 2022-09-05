@@ -144,6 +144,37 @@ modalTogglers.forEach((toggler) =>
   })
 );
 
+//Contact modal handling*******************************************************************
+const contactModal = document.getElementById("contact-modal");
+const contactOverlay = document.getElementById("contact-overlay");
+
+const contactModalTogglers = document.querySelectorAll(".contact-modal-toggle");
+
+contactModalTogglers.forEach((toggler) =>
+  toggler.addEventListener("click", () => {
+    toggleModal(contactModal, contactOverlay);
+
+    //initialize the contact form
+    document
+      .getElementById("contact-modal")
+      .querySelector(".success")
+      .classList.add("hidden");
+
+    document
+      .getElementById("contact-modal")
+      .querySelector(".error")
+      .classList.add("hidden");
+
+    document.querySelector(".contact-send-btn-txt").classList.remove("hidden");
+    document.querySelector(".contact-lds-ellipsis").style.display = "none";
+
+    document
+      .getElementById("contact-modal")
+      .querySelector("form")
+      .classList.remove("hidden");
+  })
+);
+
 //Handling landing page form*******************************************************************
 
 const devisBtn = document.getElementById("devis-btn");
@@ -172,7 +203,7 @@ const config = {
         const res = await fetch(
           `https://api-adresse.data.gouv.fr/search/?q=${query
             .trim()
-            .replace(" ", "+")}&limit=10`
+            .replace(" ", "+")}&limit=5`
         );
         const data = await res.json();
         const addressArr = [];
@@ -261,7 +292,7 @@ const endInputAutoCompleteModal = new autoComplete({
   },
 });
 
-// Form sending *********************************
+// Form sending (main) *********************************
 
 //cheking validty
 const tel = document.getElementById("tel");
@@ -317,44 +348,42 @@ tel.addEventListener("blur", () => {
 
 //checking form validity before sending
 
-if (true) {
-  //Click event on send form
-  document
-    .getElementById("main-modal-btn")
-    .addEventListener("click", async (e) => {
-      try {
-        e.preventDefault();
-        const emailValid = await email.checkValidity();
-        const telValid = await tel.checkValidity();
+//Click event on send form
+document
+  .getElementById("main-modal-btn")
+  .addEventListener("click", async (e) => {
+    try {
+      e.preventDefault();
+      const emailValid = await email.checkValidity();
+      const telValid = await tel.checkValidity();
 
-        if (!(emailValid && telValid)) return;
+      if (!(emailValid && telValid)) return;
 
-        const inpObj = {};
+      const inpObj = {};
 
-        Array.from(
-          mainModal.querySelectorAll("input ,select"),
-          (input) => (inpObj[input.name] = input.value)
-        );
+      Array.from(
+        mainModal.querySelectorAll("input ,select"),
+        (input) => (inpObj[input.name] = input.value)
+      );
 
-        showLoader();
+      showLoader();
 
-        await fetch("https://submit-form.com/L6ISlz89", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(inpObj),
-        });
-        hiddeForm();
-        showSuccess();
-      } catch (err) {
-        console.error(err);
-        hiddeForm();
-        showErr();
-      }
-    });
-}
+      await fetch("https://submit-form.com/L6ISlz89", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(inpObj),
+      });
+      hiddeForm();
+      showSuccess();
+    } catch (err) {
+      console.error(err);
+      hiddeForm();
+      showErr();
+    }
+  });
 
 function showLoader() {
   document.querySelector(".send-btn-txt").classList.add("hidden");
@@ -378,6 +407,91 @@ function showErr() {
   error.classList.remove("hidden");
 }
 
+// Form sending (contact) *********************************
+
+//cheking validty
+const emailContact = document.getElementById("email-contact");
+
+emailContact.addEventListener("invalid", (e) => {
+  e.preventDefault();
+  emailContact.nextElementSibling?.remove();
+  emailContact.classList.add("ring-red-600", "ring-1");
+  emailContact.insertAdjacentHTML(
+    "afterend",
+    `<div class="invalid-err-txt | text-red-600 text-xs -mt-4 mb-4">
+  Veuillez entrer une adresse email valide.
+</div>`
+  );
+});
+
+//reinitialize the inputs on focus
+emailContact.addEventListener("focus", (e) => {
+  e.preventDefault();
+  emailContact.classList.remove("ring-red-600", "ring-1");
+  emailContact.nextElementSibling?.remove();
+});
+
+// Checking validity on change
+emailContact.addEventListener("blur", () => {
+  emailContact.checkValidity();
+});
+
+document
+  .getElementById("contact-modal-btn")
+  .addEventListener("click", async (e) => {
+    try {
+      e.preventDefault();
+      const emailValid = await emailContact.checkValidity();
+
+      if (!emailValid) return;
+
+      const inpObj = {};
+
+      Array.from(
+        contactModal.querySelectorAll("input ,textarea"),
+        (input) => (inpObj[input.name] = input.value)
+      );
+
+      //show lodder
+      document.querySelector(".contact-send-btn-txt").classList.add("hidden");
+      document.querySelector(".contact-lds-ellipsis").style.display =
+        "inline-block";
+
+      await fetch("https://submit-form.com/BHEc4lxD", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(inpObj),
+      });
+
+      //hidde form
+      document
+        .getElementById("contact-modal")
+        .querySelector("form")
+        .classList.add("hidden");
+
+      //show success message
+      document
+        .getElementById("contact-modal")
+        .querySelector(".success")
+        .classList.remove("hidden");
+    } catch (err) {
+      console.error(err);
+      //hidde form
+      document
+        .getElementById("contact-modal")
+        .querySelector("form")
+        .classList.add("hidden");
+      //show error
+      document
+        .getElementById("contact-modal")
+        .querySelector(".error")
+        .classList.remove("hidden");
+    }
+  });
+
 // Initialize modal
 document.querySelectorAll(".modal-init").forEach((entry) =>
   entry.addEventListener("click", (e) => {
@@ -400,3 +514,27 @@ function initModal() {
   const modalForm = document.getElementById("main-modal").querySelector("form");
   modalForm.classList.remove("hidden");
 }
+
+// Initialize modal contact
+document.querySelectorAll(".contact-modal-init").forEach((entry) =>
+  entry.addEventListener("click", (e) => {
+    //initialize the contact form
+    document
+      .getElementById("contact-modal")
+      .querySelector(".success")
+      .classList.add("hidden");
+
+    document
+      .getElementById("contact-modal")
+      .querySelector(".error")
+      .classList.add("hidden");
+
+    document.querySelector(".contact-send-btn-txt").classList.remove("hidden");
+    document.querySelector(".contact-lds-ellipsis").style.display = "none";
+
+    document
+      .getElementById("contact-modal")
+      .querySelector("form")
+      .classList.remove("hidden");
+  })
+);
